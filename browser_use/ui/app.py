@@ -96,7 +96,7 @@ def _build_llm(cfg: AgentConfig):
 	if cfg.provider == LLMProvider.browser_use:
 		from browser_use.llm.browser_use.chat import ChatBrowserUse
 
-		return ChatBrowserUse(**{k: v for k, v in kwargs.items() if k != 'model'})
+		return ChatBrowserUse(**kwargs)
 
 	elif cfg.provider == LLMProvider.openai:
 		from browser_use.llm.openai.chat import ChatOpenAI
