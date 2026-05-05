@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Browser-Use · واجهة الوكيل الذكي</title>
+  <link rel="stylesheet" href="/static/style.css" />
+</head>
+<body class="dark">
+
+<!-- ═══════════════════════════ HEADER ═══════════════════════════ -->
+<header class="header">
+  <div class="header-brand">
+    <svg class="brand-icon" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect width="32" height="32" rx="8" fill="url(#brand-grad)"/>
+      <circle cx="16" cy="16" r="8" stroke="white" stroke-width="2"/>
+      <circle cx="16" cy="16" r="3" fill="white"/>
+      <defs>
+        <linearGradient id="brand-grad" x1="0" y1="0" x2="32" y2="32">
+          <stop stop-color="#6366f1"/>
+          <stop offset="1" stop-color="#8b5cf6"/>
+        </linearGradient>
+      </defs>
+    </svg>
+    <span class="brand-name">Browser-Use</span>
+    <span class="brand-sub">واجهة الوكيل الذكي</span>
+  </div>
+
+  <div class="header-center">
+    <div class="status-badge" id="statusBadge">
+      <span class="status-dot" id="statusDot"></span>
+      <span id="statusText">في انتظار المهمة</span>
+    </div>
+  </div>
+
+  <div class="header-actions">
+    <button class="btn-icon" id="themeToggle" title="تبديل المظهر">🌙</button>
+    <a class="btn-icon" href="https://docs.browser-use.com" target="_blank" rel="noreferrer" title="التوثيق">📖</a>
+  </div>
+</header>
+
+<!-- ═══════════════════════════ MAIN LAYOUT ═══════════════════════════ -->
+<div class="layout">
+
+  <!-- ─── Sidebar ─── -->
+  <nav class="sidebar">
+    <button class="nav-item active" data-tab="task">
+      <span class="nav-icon">🎯</span><span class="nav-label">المهمة</span>
+    </button>
+    <button class="nav-item" data-tab="config">
+      <span class="nav-icon">⚙️</span><span class="nav-label">الإعدادات</span>
+    </button>
+    <button class="nav-item" data-tab="browser">
+      <span class="nav-icon">🌐</span><span class="nav-label">المتصفح</span>
+    </button>
+    <button class="nav-item" data-tab="history">
+      <span class="nav-icon">📜</span><span class="nav-label">السجل</span>
+    </button>
+    <button class="nav-item" data-tab="tools">
+      <span class="nav-icon">🛠️</span><span class="nav-label">الأدوات</span>
+    </button>
+  </nav>
+
+  <!-- ─── Content ─── -->
+  <main class="content">
+
+    <!-- ══════ TAB: TASK ══════ -->
+    <section class="tab active" id="tab-task">
+      <div class="panel">
+        <h2 class="panel-title">🎯 إطلاق المهمة</h2>
+
+        <div class="form-group">
+          <label class="form-label">وصف المهمة</label>
+          <textarea id="taskInput" class="form-textarea"
+            placeholder="مثال: اذهب إلى موقع أمازون وابحث عن أفضل لابتوب بسعر أقل من 1000 دولار، ثم اجمع الأسماء والأسعار في قائمة."
+            rows="5"></textarea>
+        </div>
+
+        <div class="run-controls">
+          <button class="btn btn-primary" id="runBtn" onclick="startRun()">
+            ▶ تشغيل الوكيل
+          </button>
+          <button class="btn btn-danger" id="stopBtn" onclick="stopRun()" disabled>
+            ⏹ إيقاف
+          </button>
+          <span class="step-counter" id="stepCounter"></span>
+        </div>
+      </div>
+
+      <!-- Live log -->
+      <div class="panel panel-log">
+        <div class="panel-title-row">
+          <h2 class="panel-title">📡 المخرجات الحية</h2>
+          <button class="btn btn-sm" onclick="clearLog()">مسح</button>
+        </div>
+        <div id="logContainer" class="log-container">
+          <p class="log-placeholder">سيظهر تدفق الوكيل هنا عند التشغيل…</p>
+        </div>
+      </div>
+
+      <!-- Screenshot -->
+      <div class="panel" id="screenshotPanel" style="display:none">
+        <h2 class="panel-title">📸 لقطة الشاشة الحالية</h2>
+        <div class="screenshot-wrapper">
+          <img id="screenshotImg" class="screenshot-img" src="" alt="لقطة شاشة" />
+          <div class="screenshot-meta" id="screenshotMeta"></div>
+        </div>
+      </div>
+
+      <!-- Final result -->
+      <div class="panel" id="resultPanel" style="display:none">
+        <h2 class="panel-title">✅ النتيجة النهائية</h2>
+        <pre id="resultContent" class="result-pre"></pre>
+      </div>
+    </section>
+
+    <!-- ══════ TAB: CONFIG ══════ -->
+    <section class="tab" id="tab-config">
+      <div class="panel">
+        <h2 class="panel-title">⚙️ إعدادات نموذج الذكاء الاصطناعي</h2>
+
+        <div class="grid-2">
+          <div class="form-group">
+            <label class="form-label">مزوّد النموذج</label>
+            <select id="providerSelect" class="form-select" onchange="onProviderChange()">
+              <option value="browser_use">ChatBrowserUse (موصى به)</option>
+              <option value="openai">OpenAI</option>
+              <option value="anthropic">Anthropic</option>
+              <option value="google">Google Gemini</option>
+              <option value="groq">Groq</option>
+              <option value="ollama">Ollama (محلي)</option>
+              <option value="azure_openai">Azure OpenAI</option>
+              <option value="mistral">Mistral</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">اسم النموذج <span class="hint">(اتركه فارغاً للافتراضي)</span></label>
+            <input id="modelInput" class="form-input" type="text" placeholder="مثال: gpt-4.1-mini" />
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">مفتاح API</label>
+            <input id="apiKeyInput" class="form-input" type="password" placeholder="sk-…" />
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">درجة الحرارة <span id="tempVal">0.0</span></label>
+            <input id="tempInput" class="form-range" type="range" min="0" max="2" step="0.1" value="0"
+              oninput="document.getElementById('tempVal').textContent=this.value" />
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">الحد الأقصى للخطوات</label>
+            <input id="maxStepsInput" class="form-input" type="number" min="1" max="500" value="50" />
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">الإجراءات القصوى في الخطوة</label>
+            <input id="maxActionsInput" class="form-input" type="number" min="1" max="20" value="5" />
+          </div>
+        </div>
+
+        <div class="toggle-row">
+          <label class="toggle-label">
+            <input id="useVisionAuto" type="radio" name="useVision" value="auto" checked />
+            رؤية تلقائية
+          </label>
+          <label class="toggle-label">
+            <input id="useVisionOn" type="radio" name="useVision" value="true" />
+            رؤية دائماً
+          </label>
+          <label class="toggle-label">
+            <input id="useVisionOff" type="radio" name="useVision" value="false" />
+            بدون رؤية
+          </label>
+        </div>
+
+        <div class="toggle-row">
+          <label class="toggle-label">
+            <input id="useThinking" type="checkbox" checked />
+            تفكير داخلي
+          </label>
+          <label class="toggle-label">
+            <input id="flashMode" type="checkbox" />
+            وضع سريع (Flash)
+          </label>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">رسالة نظام إضافية <span class="hint">(اختياري)</span></label>
+          <textarea id="extendSysMsg" class="form-textarea" rows="3"
+            placeholder="تعليمات إضافية للنموذج…"></textarea>
+        </div>
+
+        <div class="provider-hint" id="providerHint"></div>
+      </div>
+    </section>
+
+    <!-- ══════ TAB: BROWSER ══════ -->
+    <section class="tab" id="tab-browser">
+      <div class="panel">
+        <h2 class="panel-title">🌐 إعدادات المتصفح</h2>
+
+        <div class="grid-2">
+          <div class="form-group">
+            <label class="toggle-label">
+              <input id="headlessCheck" type="checkbox" checked />
+              وضع بدون واجهة رسومية (Headless)
+            </label>
+          </div>
+
+          <div class="form-group">
+            <label class="toggle-label">
+              <input id="disableSecCheck" type="checkbox" />
+              تعطيل الأمان (غير موصى به)
+            </label>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">عرض النافذة (px)</label>
+            <input id="winWidthInput" class="form-input" type="number" value="1280" />
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">ارتفاع النافذة (px)</label>
+            <input id="winHeightInput" class="form-input" type="number" value="720" />
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">النطاقات المسموح بها <span class="hint">(واحد في كل سطر، فارغ = الكل)</span></label>
+          <textarea id="allowedDomainsInput" class="form-textarea" rows="3"
+            placeholder="example.com&#10;*.github.com"></textarea>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">النطاقات المحظورة <span class="hint">(واحد في كل سطر)</span></label>
+          <textarea id="prohibitedDomainsInput" class="form-textarea" rows="3"
+            placeholder="ads.example.com"></textarea>
+        </div>
+      </div>
+    </section>
+
+    <!-- ══════ TAB: HISTORY ══════ -->
+    <section class="tab" id="tab-history">
+      <div class="panel">
+        <div class="panel-title-row">
+          <h2 class="panel-title">📜 سجل التشغيل</h2>
+          <button class="btn btn-sm btn-danger" onclick="clearHistory()">مسح الكل</button>
+        </div>
+        <div id="historyList" class="history-list">
+          <p class="log-placeholder">لا توجد عمليات تشغيل سابقة بعد.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ══════ TAB: TOOLS ══════ -->
+    <section class="tab" id="tab-tools">
+      <div class="panel">
+        <h2 class="panel-title">🛠️ معلومات الأدوات المتاحة</h2>
+        <p class="panel-desc">الأدوات الافتراضية المدمجة في الوكيل:</p>
+
+        <div class="tools-grid">
+          <div class="tool-card">
+            <div class="tool-icon">🔍</div>
+            <div class="tool-name">search</div>
+            <div class="tool-desc">البحث على الويب عبر DuckDuckGo / Google</div>
+          </div>
+          <div class="tool-card">
+            <div class="tool-icon">🧭</div>
+            <div class="tool-name">navigate</div>
+            <div class="tool-desc">الانتقال إلى عنوان URL محدد</div>
+          </div>
+          <div class="tool-card">
+            <div class="tool-icon">👆</div>
+            <div class="tool-name">click</div>
+            <div class="tool-desc">النقر على عنصر بواسطة الفهرس</div>
+          </div>
+          <div class="tool-card">
+            <div class="tool-icon">⌨️</div>
+            <div class="tool-name">input</div>
+            <div class="tool-desc">إدخال نص في حقل نموذج</div>
+          </div>
+          <div class="tool-card">
+            <div class="tool-icon">📜</div>
+            <div class="tool-name">scroll</div>
+            <div class="tool-desc">التمرير لأعلى أو لأسفل في الصفحة</div>
+          </div>
+          <div class="tool-card">
+            <div class="tool-icon">📋</div>
+            <div class="tool-name">extract</div>
+            <div class="tool-desc">استخراج بيانات من صفحة الويب بالذكاء الاصطناعي</div>
+          </div>
+          <div class="tool-card">
+            <div class="tool-icon">📷</div>
+            <div class="tool-name">screenshot</div>
+            <div class="tool-desc">التقاط لقطة شاشة للتحقق البصري</div>
+          </div>
+          <div class="tool-card">
+            <div class="tool-icon">🗂️</div>
+            <div class="tool-name">switch / close</div>
+            <div class="tool-desc">إدارة علامات تبويب المتصفح</div>
+          </div>
+          <div class="tool-card">
+            <div class="tool-icon">📂</div>
+            <div class="tool-name">write_file / read_file</div>
+            <div class="tool-desc">قراءة وكتابة الملفات المحلية</div>
+          </div>
+          <div class="tool-card">
+            <div class="tool-icon">🏁</div>
+            <div class="tool-name">done</div>
+            <div class="tool-desc">إنهاء المهمة وإرجاع النتيجة</div>
+          </div>
+          <div class="tool-card">
+            <div class="tool-icon">⏳</div>
+            <div class="tool-name">wait</div>
+            <div class="tool-desc">الانتظار لعدد محدد من الثواني</div>
+          </div>
+          <div class="tool-card">
+            <div class="tool-icon">↩️</div>
+            <div class="tool-name">go_back</div>
+            <div class="tool-desc">العودة إلى الصفحة السابقة في التاريخ</div>
+          </div>
+        </div>
+
+        <div class="info-box">
+          <strong>💡 نصيحة:</strong>
+          يمكنك إضافة أدوات مخصصة عبر الكود البرمجي باستخدام <code>@tools.action(...)</code>.
+          راجع <a href="https://docs.browser-use.com/customize/tools/basics" target="_blank">التوثيق</a> لمزيد من التفاصيل.
+        </div>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<!-- ─── Toast notifications ─── -->
+<div id="toastContainer" class="toast-container"></div>
+
+<script src="/static/app.js"></script>
+</body>
+</html>

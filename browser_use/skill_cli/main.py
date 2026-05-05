@@ -133,6 +133,28 @@ if '--template' in sys.argv:
 	init_main()
 	sys.exit(0)
 
+# Handle 'ui' command – launch the web-based Agent UI
+if _get_subcommand() == 'ui':
+	try:
+		from browser_use.ui.app import main as ui_main
+	except ImportError:
+		print(
+			'⚠️  Web UI dependencies are not installed.\n'
+			'    Install them with: pip install "browser-use[ui]"\n',
+			file=sys.stderr,
+		)
+		sys.exit(1)
+
+	import argparse as _ap
+
+	_parser = _ap.ArgumentParser(prog='browser-use ui', description='Launch the Browser-Use web UI')
+	_parser.add_argument('--host', default='0.0.0.0', help='Bind host (default: 0.0.0.0)')
+	_parser.add_argument('--port', type=int, default=7788, help='Port (default: 7788)')
+	_parser.add_argument('--reload', action='store_true', help='Enable auto-reload (development mode)')
+	_args = _parser.parse_args(sys.argv[2:])
+	ui_main(host=_args.host, port=_args.port, reload=_args.reload)
+	sys.exit(0)
+
 # Handle 'cloud --help' / 'cloud -h' early — argparse intercepts --help before
 # REMAINDER can capture it, so we route to our custom usage printer directly.
 # Only intercept when --help is immediately after 'cloud' (not 'cloud v2 --help').
